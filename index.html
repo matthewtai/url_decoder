@@ -1,0 +1,502 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>URL Encoder / Decoder</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <style>
+    :root {
+      color-scheme: light dark;
+      --bg: #0f172a;
+      --panel: #111827;
+      --accent: #22c55e;
+      --accent-soft: #15803d;
+      --border: #1f2937;
+      --text: #e5e7eb;
+      --muted: #9ca3af;
+      --error: #f97373;
+      --font: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      font-family: var(--font);
+      background: radial-gradient(circle at top left, #1e293b, #020617);
+      color: var(--text);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 1.5rem;
+    }
+
+    .app {
+      width: 100%;
+      max-width: 900px;
+      background: linear-gradient(145deg, rgba(15,23,42,0.96), rgba(15,23,42,0.98));
+      border-radius: 16px;
+      border: 1px solid rgba(148,163,184,0.35);
+      box-shadow:
+        0 24px 60px rgba(15,23,42,0.85),
+        0 0 0 1px rgba(15,23,42,0.9);
+      padding: 1.5rem;
+      display: flex;
+      flex-direction: column;
+      gap: 1.5rem;
+    }
+
+    @media (min-width: 768px) {
+      .app {
+        padding: 2rem;
+      }
+    }
+
+    .app-header {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.75rem 1rem;
+      align-items: baseline;
+      margin-bottom: 1.25rem;
+    }
+
+    .title {
+      font-size: clamp(1.4rem, 2vw + 0.6rem, 1.8rem);
+      font-weight: 650;
+      letter-spacing: 0.01em;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .title-pill {
+      font-size: 0.7rem;
+      text-transform: uppercase;
+      letter-spacing: 0.16em;
+      padding: 0.15rem 0.45rem;
+      border-radius: 999px;
+      border: 1px solid rgba(34,197,94,0.55);
+      color: var(--accent);
+      background: radial-gradient(circle at top left, rgba(34,197,94,0.15), transparent);
+    }
+
+    .subtitle {
+      color: var(--muted);
+      font-size: 0.9rem;
+      max-width: 520px;
+    }
+
+    main {
+      display: flex;
+      flex-direction: column;
+      gap: 2rem;
+    }
+
+    .field-group {
+      display: flex;
+      flex-direction: column;
+      gap: 0.75rem;
+      min-height: 250px;
+    }
+
+    label {
+      font-size: 0.8rem;
+      text-transform: uppercase;
+      letter-spacing: 0.14em;
+      color: var(--muted);
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+    }
+
+    .hint {
+      font-size: 0.7rem;
+      text-transform: none;
+      letter-spacing: normal;
+    }
+
+    textarea {
+      width: 100%;
+      flex-grow: 1;
+      padding: 0.75rem 0.85rem;
+      border-radius: 10px;
+      border: 1px solid var(--border);
+      background: radial-gradient(circle at top left, #020617, #020617);
+      color: var(--text);
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+      font-size: 0.9rem;
+      line-height: 1.45;
+      outline: none;
+      box-shadow: inset 0 0 0 1px rgba(15,23,42,0.6);
+      resize: vertical;
+      transition:
+        border-color 0.15s ease,
+        box-shadow 0.15s ease,
+        background-color 0.15s ease,
+        transform 0.08s ease;
+      min-height: 220px;
+    }
+
+    textarea:focus {
+      border-color: rgba(34,197,94,0.7);
+      box-shadow:
+        0 0 0 1px rgba(34,197,94,0.55),
+        0 18px 40px rgba(15,23,42,0.9);
+      background: radial-gradient(circle at top left, #020617, #020617);
+      transform: translateY(-1px);
+    }
+
+    .controls-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+      align-items: center;
+      margin-top: 0.5rem;
+    }
+
+    .btn {
+      appearance: none;
+      border: none;
+      border-radius: 999px;
+      padding: 0.55rem 1.15rem;
+      font-size: 0.8rem;
+      font-weight: 550;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.4rem;
+      color: #0b1120;
+      background: radial-gradient(circle at top left, #4ade80, #22c55e);
+      box-shadow:
+        0 10px 30px rgba(34,197,94,0.35),
+        0 0 0 1px rgba(15,23,42,0.7);
+      transition:
+        transform 0.08s ease-out,
+        box-shadow 0.1s ease-out,
+        filter 0.08s ease-out,
+        background 0.15s ease-out;
+      white-space: nowrap;
+    }
+
+    .btn span {
+      font-size: 1.05em;
+    }
+
+    .btn-secondary {
+      background: radial-gradient(circle at top left, #0b1120, #020617);
+      color: var(--muted);
+      box-shadow:
+        0 8px 24px rgba(15,23,42,0.9),
+        0 0 0 1px rgba(31,41,55,0.9);
+    }
+
+    .btn:hover {
+      transform: translateY(-1px);
+      filter: brightness(1.02);
+      box-shadow:
+        0 16px 35px rgba(34,197,94,0.45),
+        0 0 0 1px rgba(15,23,42,0.8);
+    }
+
+    .btn-secondary:hover {
+      box-shadow:
+        0 14px 32px rgba(15,23,42,0.95),
+        0 0 0 1px rgba(55,65,81,0.9);
+      filter: none;
+    }
+
+    .btn:active {
+      transform: translateY(1px) scale(0.99);
+      box-shadow:
+        0 6px 16px rgba(15,23,42,0.9),
+        0 0 0 1px rgba(15,23,42,0.9);
+    }
+
+    .btn-icon {
+      font-size: 1.1rem;
+      transform: translateY(0.5px);
+    }
+
+    .options {
+      display: flex;
+      align-items: center;
+      font-size: 0.78rem;
+      color: var(--muted);
+    }
+
+    .options-group {
+      display: inline-flex;
+      gap: 0.5rem;
+      align-items: center;
+      padding: 0.25rem 0.65rem;
+      border-radius: 999px;
+      background: radial-gradient(circle at top left, rgba(15,23,42,0.9), rgba(15,23,42,0.95));
+      border: 1px solid rgba(51,65,85,0.9);
+    }
+
+    .options label {
+      display: flex;
+      align-items: center;
+      gap: 0.25rem;
+      text-transform: none;
+      letter-spacing: normal;
+      font-size: 0.78rem;
+      cursor: pointer;
+    }
+
+    .options input[type="radio"] {
+      accent-color: var(--accent);
+      cursor: pointer;
+      margin: 0;
+    }
+
+    .status {
+      margin-top: 0.5rem;
+      font-size: 0.75rem;
+      min-height: 1.1em;
+      color: var(--muted);
+      display: flex;
+      align-items: center;
+      gap: 0.4rem;
+    }
+
+    .status.error {
+      color: var(--error);
+    }
+
+    .status-dot {
+      width: 7px;
+      height: 7px;
+      border-radius: 999px;
+      background: rgba(148,163,184,0.65);
+    }
+
+    .status.error .status-dot {
+      background: rgba(248,113,113,0.9);
+    }
+
+    .status.ok .status-dot {
+      background: rgba(52,211,153,0.9);
+    }
+
+    .footer {
+      margin-top: 1rem;
+      font-size: 0.7rem;
+      color: var(--muted);
+      display: flex;
+      justify-content: space-between;
+      gap: 0.75rem;
+      flex-wrap: wrap;
+    }
+
+    .kbd {
+      display: inline-flex;
+      align-items: center;
+      padding: 0.05rem 0.35rem;
+      margin-left: 0.1rem;
+      border-radius: 4px;
+      border: 1px solid rgba(75,85,99,0.9);
+      background: radial-gradient(circle at top left, #020617, #020617);
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+      font-size: 0.7em;
+      text-transform: none;
+      letter-spacing: 0;
+    }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <header class="app-header">
+      <div class="title">
+        URL Encoder / Decoder
+      </div>
+    </header>
+
+    <main>
+      <!-- INPUT -->
+      <section class="field-group">
+        <label for="input">
+          Input
+          <span class="hint">Raw text or already-encoded URL</span>
+        </label>
+        <textarea id="input" spellcheck="false" placeholder="Type or paste here..."></textarea>
+
+        <div class="controls-row">
+          <button class="btn" id="encodeBtn" type="button">
+            <span class="btn-icon">⇢</span>
+            <span>Encode</span>
+          </button>
+          <button class="btn btn-secondary" id="decodeBtn" type="button">
+            <span class="btn-icon">⇠</span>
+            <span>Decode</span>
+          </button>
+          <button class="btn btn-secondary" id="swapBtn" type="button">
+            <span class="btn-icon">⇄</span>
+            <span>Swap</span>
+          </button>
+        </div>
+
+        <div class="options">
+          <div class="options-group" aria-label="Encoding mode">
+            <span>Mode:</span>
+            <label>
+              <input type="radio" name="mode" value="url" checked>
+              Full URL
+            </label>
+            <label>
+              <input type="radio" name="mode" value="component">
+              Component
+            </label>
+          </div>
+        </div>
+
+        <div class="status" id="status">
+          <span class="status-dot"></span>
+          <span>Idle</span>
+        </div>
+      </section>
+
+      <!-- OUTPUT -->
+      <section class="field-group">
+        <label for="output">
+          Output
+          <span class="hint">Result of last encode / decode</span>
+        </label>
+        <textarea id="output" spellcheck="false" placeholder="Result will appear here..." readonly></textarea>
+      </section>
+    </main>
+
+    <footer class="footer">
+      <span>
+        Keyboard: <span class="kbd">Ctrl</span> + <span class="kbd">Enter</span> = Encode,
+        <span class="kbd">Shift</span> + <span class="kbd">Enter</span> = Decode
+      </span>
+      <span>Safe URL handling using native JavaScript encoding APIs.</span>
+    </footer>
+  </div>
+
+  <script>
+    const inputEl = document.querySelector("#input");
+    const outputEl = document.querySelector("#output");
+    const statusEl = document.querySelector("#status");
+    const encodeBtn = document.querySelector("#encodeBtn");
+    const decodeBtn = document.querySelector("#decodeBtn");
+    const swapBtn = document.querySelector("#swapBtn");
+
+    function getMode() {
+      const checked = document.querySelector('input[name="mode"]:checked');
+      return checked ? checked.value : "url";
+    }
+
+    function setStatus(message, type) {
+      statusEl.classList.remove("error", "ok");
+      if (type === "error") {
+        statusEl.classList.add("error");
+      } else if (type === "ok") {
+        statusEl.classList.add("ok");
+      }
+      statusEl.lastElementChild.textContent = message;
+    }
+
+    // Try to decode repeatedly until the string stops changing,
+    // but bail out if something is malformed.
+    function deepDecode(value, isUrlMode) {
+      let previous;
+      let current = value;
+
+      try {
+        // Decode until stable or up to a few times to avoid infinite loops
+        for (let i = 0; i < 10; i++) {
+          previous = current;
+          current = isUrlMode ? decodeURI(current) : decodeURIComponent(current);
+          if (current === previous) break;
+        }
+      } catch (err) {
+        // If a step fails, return what we had so far
+        return previous || value;
+      }
+
+      return current;
+    }
+
+    function encodeValue() {
+      const value = inputEl.value;
+      if (!value) {
+        outputEl.value = "";
+        setStatus("Nothing to encode", "");
+        return;
+      }
+
+      const mode = getMode();
+      try {
+        const encoded =
+          mode === "url"
+            ? encodeURI(value)
+            : encodeURIComponent(value);
+        outputEl.value = encoded;
+        setStatus(
+          mode === "url" ? "Encoded using encodeURI" : "Encoded using encodeURIComponent",
+          "ok"
+        );
+      } catch (err) {
+        outputEl.value = "";
+        setStatus("Encoding failed: " + err.message, "error");
+      }
+    }
+
+    function decodeValue() {
+      const value = inputEl.value;
+      if (!value) {
+        outputEl.value = "";
+        setStatus("Nothing to decode", "");
+        return;
+      }
+
+      const mode = getMode();
+      const isUrlMode = mode === "url";
+
+      try {
+        // First do a single decode to get the initial result
+        const once = isUrlMode ? decodeURI(value) : decodeURIComponent(value);
+        // Then deep decode any nested encodings
+        const fully = deepDecode(once, isUrlMode);
+        outputEl.value = fully;
+        setStatus(
+          "Decoded",
+          "ok"
+        );
+      } catch (err) {
+        outputEl.value = "";
+        setStatus("Decoding failed – invalid escape sequence?", "error");
+      }
+    }
+
+    function swapValues() {
+      const tmp = inputEl.value;
+      inputEl.value = outputEl.value;
+      outputEl.value = tmp;
+      setStatus("Swapped input/output", "");
+    }
+
+    encodeBtn.addEventListener("click", encodeValue);
+    decodeBtn.addEventListener("click", decodeValue);
+    swapBtn.addEventListener("click", swapValues);
+
+    inputEl.addEventListener("keydown", (event) => {
+      if (event.key === "Enter" && (event.ctrlKey || event.metaKey)) {
+        event.preventDefault();
+        encodeValue();
+      } else if (event.key === "Enter" && event.shiftKey) {
+        event.preventDefault();
+        decodeValue();
+      }
+    });
+  </script>
+</body>
+</html>
